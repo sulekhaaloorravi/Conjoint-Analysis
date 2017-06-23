@@ -1,0 +1,97 @@
+---
+title: "SulekhaAloorravi_SL_Lab"
+author: "Sulekha Aloorravi"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+  word_document: default
+---
+
+###Lab Question : For the following 50 observations (predicted probability and class label), what is the best accuracy value and at what cut-off?   
+
+**Answer:**
+
+Save predicted probabilities and label data from Question into a csv file.
+
+```{r}
+data <- read.csv("E:/Sulekhas BOOKSHELF/GreatLakes/StatisticalLearning/Lab/Lab.csv",header = TRUE)
+head(data)
+hist(data$Predicted....,xlab = "Predicted Probabilities", main = "Display of Predicted Probabilities", col = rainbow(sample(1:50,50)))
+```
+
+Input data file (data) consists of the following data:
+
+1. predicted probabilities or estimated probabilities
+
+2. labels that are binary values
+
+In this assignment, model has already been applied and predicted probabilities are already calculated. Our aim is to make use of predicted probabilities and labels and calculate best accuracy and its corresponding cutoff.
+
+**ROCR** is the package used to evaluate the performance of the model which has predicted these probabilities.
+
+"Prediction" and "Performance" functions are part of ROCR package and they are used here.
+
+**prediction** function is used to transform input data into standardized format.
+
+**performance** function is used to perform all kinds of predictor evaluations
+
+```{r}
+library(ROCR)
+pred <- prediction(data$Predicted,data$Y)
+pred
+```
+
+**tpr** - True Positive Rate or Sensitivity:- True positive rate. P(Yhat = + | Y = +). Estimated as: TP/P.
+
+**fpr** - False Positive Rate or (1 - Specificity):- False positive rate. P(Yhat = + | Y = -). Estimated as: FP/N.
+
+Draw an ROC curve based on tpr and fpr calculated using **performance** function.
+
+
+```{r}
+perf_tpr_fpr <- performance(pred, "tpr", "fpr")
+plot(perf_tpr_fpr,col="blue", colorize=T, main = "ROC Curve")
+abline(a=0, b=1,col="red")
+```
+
+In the above graph, majority of the line is above the curve and this signifies that the model used has a poor performance.
+
+**lift** - Lift value:- P(Yhat = + | Y = +)/P(Yhat = +).
+
+**rpp** - Rate of positive predictions:- P(Yhat = +). Estimated as: (TP+FP)/(TP+FP+TN+FN).
+
+
+```{r}
+perf_lift_rpp <- performance(pred, "lift", "rpp")
+plot(perf_lift_rpp, col="red",  main = "Lift Chart")
+
+```
+
+
+**acc** - Accuracy:- Accuracy. P(Yhat = Y). Estimated as: (TP+TN)/(P+N).
+
+Cutoff of predicted values are calculated and plotted against their corresponding accuracy values.
+
+```{r}
+perf_acc <- performance(pred, "acc")
+plot(perf_acc, col = "blue", main="CutOff vs Accuracy")
+```
+
+Accuracy and Cutoff values calculated from the above performance function is used to calculate the best accuracy and its corresponding cutoff.
+
+```{r}
+i = which.max( slot(perf_acc, "y.values")[[1]] )
+bestacc = slot(perf_acc, "y.values")[[1]][i]
+cutoff = slot(perf_acc, "x.values")[[1]][i]
+
+```
+
+**Best Accuracy Value with its corresponding CutOff are as follows:**
+
+```{r}
+print(c(accuracy= bestacc, cutoff = cutoff))
+```
+
+
+

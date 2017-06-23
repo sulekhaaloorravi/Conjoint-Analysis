@@ -1,0 +1,364 @@
+---
+title: "SulekhaAloorravi_SL_ASmt"
+author: "Sulekha Aloorravi"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+  word_document: default
+---
+###Introduction
+
+The methodology used in this assignment is conjoint analysis with ranking. This method helps in identifying the relative importance of an attribute compared to the other, preferences on a product based on Brand, price, color etc.
+
+I chose to make use of Amazon.in to select a product. I just selected two random refrigerator models and imported their Technical details into an excel sheet. Technical details of Amazon's Product Information gave me the data required to decide attributes or factors and their corresponding levels
+
+###A. Create a full factorial design for a product with 5 attributes and 2 levels each. Level for each attribute can be labelled 1 and 2.
+
+**Answer: Full factorial design:**
+As the name suggests, Full factorial design would consider all permutations and combinations of designing profiles. For each attribute, each level is combined with each other level of the other attributes.
+There will be 2^5 = 32 (2x2x2x2x2) profiles in this design.
+
+
+```{r}
+library(conjoint)
+library(rAmCharts)
+library(optimbase)
+library(car)
+```
+
+Define attributes and levels
+
+```{r}
+#Whirlpool -- "WP"
+#15290 -- "15k"
+#23900 -- "23k"
+# Single Door and Scarlet Color -- "1D"
+# Double Door and Steel -- "2D"
+# Direct Cool -- "DC"
+# Frost Free -- "FF"
+Brand <- c("LG", "WP")
+Capacity_Litres <- c("190","240")
+Price <- c("15k","23k")
+Appearance <- c("1D","2D")
+DefrostSystem <- c("DC", "FF")
+```
+
+Expand profile and convert all columns into factors
+
+```{r}
+FullFactorial<- expand.grid(Brand,Capacity_Litres,Price,Appearance,DefrostSystem)
+```
+
+Create a full factorial design
+
+```{r}
+FullFactorialDesign <- caFactorialDesign(FullFactorial,type="full")
+colnames(FullFactorialDesign) <- c("Brand", "Capacity in Liters", "Price", "Appearance", "Defrost System")
+FullFactorialDesign$Price <- as.factor(FullFactorialDesign$Price)
+caEncodedDesign(FullFactorialDesign) -> EncodedFullProfile
+EncodedFullProfile
+```
+
+Calculate number of profiles
+
+```{r}
+NumberOfProfiles = nrow(FullFactorialDesign)
+print(c("Number Of Profiles = ",NumberOfProfiles))
+```
+
+View correlation of attributes in Full Profile
+
+```{r}
+cor(EncodedFullProfile)
+```
+
+Create consumers and simulate data by generating random rankings for each profile
+
+```{r}
+Ravi <- sample(1:32,32)
+Dileep <- sample(1:32,32)
+Sasi <- sample(1:32,32)
+Sailu <- sample(1:32,32)
+Praba <- sample(1:32,32)
+Sudha <- sample(1:32,32)  
+```
+
+Combine all consumer ranking records into a single data frame
+
+```{r}
+ConsumerRanks <- rbind(Ravi,Dileep,Sasi,Sailu,Praba,Sudha)
+```
+
+Combine levels of all attributes into a single data frame
+
+```{r}
+Levels <- c(Brand,Capacity_Litres,Price,Appearance,DefrostSystem)
+```
+
+Estimate parameters of conjoint analysis model for one consumer
+
+```{r}
+caModel(Ravi,EncodedFullProfile)
+```
+
+Calculate individual utilities for each consumer at each level of attribute
+
+```{r}
+cap<-caPartUtilities(ConsumerRanks,EncodedFullProfile,Levels)
+cap
+```
+
+Plot Part Worth Utilities
+
+```{r}
+barplot(cap[,2:ncol(cap)],col = rainbow(10),main = "Part Worth Utilities")
+```
+
+Customers are grouped into clusters using K-means clustering and rated against each profile
+
+```{r}
+caSegmentation(ConsumerRanks,EncodedFullProfile)
+```
+
+Calculate Average Part worth utilities of each attribute levels
+
+```{r}
+worth <- caUtilities(ConsumerRanks,EncodedFullProfile,Levels)
+worth
+worth <- worth [2:length(worth)]
+names(worth) <- c("LG", "WP","190", "240", "15k", "23k", "1D", "2D", "DC", "FF" )
+```
+
+Plot Average Part Worth Utilities
+
+```{r}
+barplot(worth,col = rainbow(10),main = "Average Part Worth Utilities")
+```
+
+Calculate percentage of importance of each attribute and plot it.
+
+```{r}
+imp<-caImportance(ConsumerRanks,EncodedFullProfile)
+names(imp) <- c("Brand", "Capacity", "Price", "Appearance", "Defrost")
+barplot(imp, col = rainbow(5), main = "Importance of each Attribute")
+```
+
+Create a pie chart to visualize Importance of each attribute
+```{r}
+#Convert imp into a data frame to draw a pie chart
+imp<-transpose(imp)
+label <- c("Brand", "Capacity", "Price", "Appearance", "Defrost")
+imp <- cbind(label,imp)
+imp <- as.data.frame(imp)
+colnames(imp) <- c("label","value")
+imp$label <- as.character(imp$label)
+imp$value <- as.character(imp$value)
+imp$value <- as.numeric(imp$value)
+
+```
+
+
+```{r}
+amPie(imp,inner_radius = 50, depth = 20, col = rainbow(5))
+```
+
+
+
+###B.Create an orthogonal design, how many profiles are there?
+
+**Answer: Orthogonal Design:**
+An experimental design is orthogonal if the effects of any factor balance out (sum to zero) across the effects of the other factors. 
+
+Orthogonal design will have 1/4th of the total profiles.
+
+No. of profiles in Orthogonal = 8
+
+Create orthogonal design
+
+```{r}
+OrthogonalProfiles <- caFactorialDesign(EncodedFullProfile,type="orthogonal")
+OrthogonalProfiles
+```
+
+View correlation of attributes in Orthogonal profile
+
+```{r}
+cor(OrthogonalProfiles)
+```
+
+Calculate number of profiles
+
+```{r}
+NumberOfProfiles = nrow(OrthogonalProfiles)
+print(c("Number Of Profiles = ",NumberOfProfiles))
+```
+
+Create consumers and simulate data by generating random rankings for each profile
+
+```{r}
+Ravi <- sample(1:8,8)
+Dileep <- sample(1:8,8)
+Sasi <- sample(1:8,8)
+Sailu <- sample(1:8,8)
+Praba <- sample(1:8,8)
+Sudha <- sample(1:8,8)  
+```
+
+Combine all consumer ranking records into a single data frame
+
+```{r}
+ConsumerRanks <- rbind(Ravi,Dileep,Sasi,Sailu,Praba,Sudha)
+```
+
+Combine levels of all attributes into a single data frame
+
+```{r}
+Levels <- c(Brand,Capacity_Litres,Price,Appearance,DefrostSystem)
+```
+
+Estimate parameters of conjoint analysis model for one consumer
+
+```{r}
+caModel(Ravi,OrthogonalProfiles)
+```
+
+Calculate individual utilities for each consumer at each level of attribute
+
+```{r}
+cap2<-caPartUtilities(ConsumerRanks,OrthogonalProfiles,Levels)
+cap2
+```
+
+
+Plot Part Worth Utilities
+
+```{r}
+barplot(cap2[,2:ncol(cap2)],col = rainbow(10),main = "Orthogonal - Part Worth Utilities")
+```
+
+Customers are grouped into clusters using K-means clustering and rated against each profile
+
+```{r}
+caSegmentation(ConsumerRanks,OrthogonalProfiles)
+```
+
+Calculate Average Part worth utilities of each attribute levels
+
+```{r}
+worth <- caUtilities(ConsumerRanks,OrthogonalProfiles,Levels)
+worth
+worth <- worth [2:length(worth)]
+names(worth) <- c("LG", "WP","190", "240", "15k", "23k", "1D", "2D", "DC", "FF" )
+```
+
+Plot Average Part Worth Utilities
+
+```{r}
+barplot(worth,col = rainbow(10),main = "Orthogonal - Average Part Worth Utilities")
+```
+
+Calculate percentage of importance of each attribute and plot it.
+
+```{r}
+imp<-caImportance(ConsumerRanks,OrthogonalProfiles)
+names(imp) <- c("Brand", "Capacity", "Price", "Appearance", "Defrost")
+barplot(imp, col = rainbow(5), main = "Orthogonal - Importance of each Attribute")
+```
+
+Create a pie chart to visualize Importance of each attribute - Orthogonal Profile
+
+```{r}
+#Convert imp into a data frame to draw a pie chart
+imp<-transpose(imp)
+label <- c("Brand", "Capacity", "Price", "Appearance", "Defrost")
+imp <- cbind(label,imp)
+imp <- as.data.frame(imp)
+colnames(imp) <- c("label","value")
+imp$label <- as.character(imp$label)
+imp$value <- as.character(imp$value)
+imp$value <- as.numeric(imp$value)
+```
+
+
+```{r}
+amPie(imp,inner_radius = 50, depth = 20, col = rainbow(5))
+```
+
+
+
+
+
+###C. consumers' willingness to pay for color given the following output of a conjoint analysis. Price has three levels and color has two levels.  Price levels are 50, 100, and 150.  Color levels are Black and White.
+The coefficients estimated by caModel function are given below.
+Price 50    7.8  
+Price 100    0.8
+Colour Black   1.4
+
+**Answer: Willingness to Pay**
+
+In conjoin analysis, sum total of all co-efficients for an attribute should be equal to 0.
+
+In this case, there are 3 levels for Price - 50, 100, 150.
+Co-efficients for:
+Price 50 = 7.8
+Price 100 = 0.8
+
+```{r}
+PriceData = c(50,100,150)
+Price50 = 7.8
+Price100 = 0.8
+```
+
+Calculating Coefficient of Price 150
+
+```{r}
+Price150 = 0 - (Price100+Price50)
+Price150
+```
+
+Calculating Range of Coefficient
+
+```{r}
+Range.CoeffPrice = Price50-Price150
+Range.CoeffPrice
+```
+
+Calculating Range of Price
+```{r}
+Range.Price = max(PriceData) - min(PriceData)
+```
+
+Calculating Unit Satisfaction
+
+```{r}
+UnitSatisfaction = Range.Price/Range.CoeffPrice
+UnitSatisfaction
+```
+
+Calculating Willingness to pay for color
+
+```{r}
+ColorBlack = 1.4
+```
+
+Color white as per conjoint analysis sum total of coefficients will be
+
+```{r}
+ColorWhite = 0-ColorBlack
+ColorWhite
+```
+
+Range of coefficient of color
+
+```{r}
+Range.CoeffColor = ColorBlack - ColorWhite
+```
+
+Willingess to Pay for Color
+
+```{r}
+WIP.Color = UnitSatisfaction * Range.CoeffColor
+WIP.Color
+```
+
