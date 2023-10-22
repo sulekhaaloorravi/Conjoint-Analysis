@@ -2,7 +2,7 @@
 Sulekha Aloorravi  
 ###Introduction
 
-The methodology used in this assignment is conjoint analysis with ranking. This method helps in identifying the relative importance of an attribute compared to the other, preferences on a product based on Brand, price, color etc.
+The methodology used in this case study is conjoint analysis with ranking. This method helps in identifying the relative importance of an attribute compared to the other, preferences on a product based on Brand, price, color etc.
 
 I chose to make use of Amazon.in to select a product. I just selected two random refrigerator models and imported their Technical details into an excel sheet. Technical details of Amazon's Product Information gave me the data required to decide attributes or factors and their corresponding levels
 
