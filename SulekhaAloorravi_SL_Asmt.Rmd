@@ -9,7 +9,7 @@ output:
 ---
 ###Introduction
 
-The methodology used in this assignment is conjoint analysis with ranking. This method helps in identifying the relative importance of an attribute compared to the other, preferences on a product based on Brand, price, color etc.
+The methodology used in this case study is conjoint analysis with ranking. This method helps in identifying the relative importance of an attribute compared to the other, preferences on a product based on Brand, price, color etc.
 
 I chose to make use of Amazon.in to select a product. I just selected two random refrigerator models and imported their Technical details into an excel sheet. Technical details of Amazon's Product Information gave me the data required to decide attributes or factors and their corresponding levels
 
@@ -289,11 +289,11 @@ amPie(imp,inner_radius = 50, depth = 20, col = rainbow(5))
 
 
 
-###C. consumers' willingness to pay for color given the following output of a conjoint analysis. Price has three levels and color has two levels.  Price levels are 50, 100, and 150.  Color levels are Black and White.
+###C. consumers' willingness to pay for color given the following output of a conjoint analysis. Price has three levels and colorÂ has two levels.Â  Price levels are 50, 100, and 150.Â  Color levels are Black and White.
 The coefficients estimated by caModel function are given below.
-Price 50    7.8  
-Price 100    0.8
-Colour Black   1.4
+Price 50Â Â Â  7.8  
+Price 100Â Â Â  0.8
+Colour BlackÂ Â  1.4
 
 **Answer: Willingness to Pay**
 
